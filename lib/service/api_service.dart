@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shipping/model/address_model.dart';
-import 'package:shipping/model/address_model_by_default_mbr.dart';
+import 'package:shipping/model/address_by_default_model.dart';
 import 'package:shipping/model/all_countries_model.dart';
 import 'package:shipping/model/cities_model.dart';
 
@@ -13,7 +13,6 @@ class ApiService {
 
   Uri _uri(String path, [Map<String, dynamic>? query]) {
     if (query == null) return Uri.parse('$kBaseUrl$path');
-    debugPrint("API URL: $kBaseUrl$path");
     return Uri.parse(
       '$kBaseUrl$path',
     ).replace(queryParameters: query.map((k, v) => MapEntry(k, v.toString())));

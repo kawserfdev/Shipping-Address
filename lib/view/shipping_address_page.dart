@@ -1,16 +1,17 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shipping/model/address_model.dart';
+import 'package:shipping/model/address_by_default_model.dart';
 import 'package:shipping/model/all_countries_model.dart';
 import 'package:shipping/model/cities_model.dart';
 import 'package:shipping/provider/address_change_notifire.dart';
 import 'package:shipping/provider/address_provider.dart';
 import 'package:shipping/repository/address_repository.dart';
+import 'package:shipping/utils/app_colors.dart';
 
 class ShippingAddressPage extends ConsumerStatefulWidget {
-  final AddressModel? address;
+  final AddressModelByMemberDefault? address;
   const ShippingAddressPage({Key? key, this.address}) : super(key: key);
 
   @override
@@ -25,7 +26,7 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final notifier = ref.read(addressChangeNotifierProvider);
       final repo = ref.read(addressRepositoryProvider);
-      notifier.initialize(widget.address, repo);
+      notifier.initialize(widget.address, repo,context);
     });
   }
 
@@ -33,9 +34,6 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
   Widget build(BuildContext context) {
     final repo = ref.watch(addressRepositoryProvider);
     final notifier = ref.watch(addressChangeNotifierProvider);
-    const primaryColor = Color(0xFFB47839);
-    const bgColor = Color(0xFFFFFFFF);
-    const appbarColor = Color(0xFFFDF7F2);
     return Listener(
       onPointerDown: (_) {
         FocusScopeNode currentFocus = FocusScope.of(context);
@@ -44,7 +42,7 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.bgColor,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(140.0),
           child: ClipRRect(
@@ -53,7 +51,7 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
               bottomRight: Radius.circular(20),
             ),
             child: AppBar(
-              backgroundColor: appbarColor,
+              backgroundColor: AppColors.appbarColor,
               elevation: 0,
               centerTitle: true,
               automaticallyImplyLeading: false,
@@ -69,14 +67,13 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           GestureDetector(
-                            onTap: () => Navigator.pop(context),
+                            onTap: () {}, // => Navigator.pop(context),
                             child: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(color: Colors.black45),
                                 color: Colors.white.withOpacity(0.9),
-                                
                               ),
                               child: const Icon(
                                 Icons.arrow_back,
@@ -93,9 +90,12 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
                               color: Colors.black,
                             ),
                           ),
-                          const Icon(
-                            Icons.notification_add_outlined,
-                            color: Colors.black54,
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.notifications_rounded,
+                              color: Colors.black54,
+                            ),
                           ),
                         ],
                       ),
@@ -103,7 +103,7 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
                     Expanded(
                       child: Container(
                         width: double.infinity,
-                        color: appbarColor,
+                        color: AppColors.appbarColor,
                         padding: const EdgeInsets.symmetric(
                           vertical: 11,
                           horizontal: 17,
@@ -116,21 +116,21 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
                               "Shopping Cart",
                               Icons.shopping_cart,
                               true,
-                              primaryColor,
+                              AppColors.primaryColor,
                             ),
-                            _buildDivider(primaryColor, true),
+                            _buildDivider(AppColors.primaryColor, true),
                             _buildStepItem(
                               "Shipping Address",
                               Icons.location_on,
                               true,
-                              primaryColor,
+                              AppColors.primaryColor,
                             ),
-                            _buildDivider(primaryColor, false),
+                            _buildDivider(AppColors.primaryColor, false),
                             _buildStepItem(
                               "Payment",
                               Icons.camera_alt,
                               false,
-                              primaryColor,
+                              AppColors.primaryColor,
                             ),
                           ],
                         ),
@@ -216,7 +216,6 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
 
                           const SizedBox(height: 12),
 
-                          // Country + Region Row
                           Row(
                             children: [
                               Expanded(
@@ -243,7 +242,6 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
 
                           const SizedBox(height: 12),
 
-                          // Use existing/new
                           Row(
                             children: [
                               Expanded(
@@ -279,16 +277,41 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
 
                           const SizedBox(height: 8),
 
-                          // Buttons
                           Row(
                             children: [
                               Expanded(
                                 child: OutlinedButton(
-                                  onPressed: () => Navigator.pop(context),
+                                  onPressed: notifier.isLoading
+                                      ? null
+                                      : () {
+                                          if (notifier.addressModel != null) {
+                                            notifier.deleteAddress(repo);
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Address Delete Successful',
+                                                ),
+                                              ),
+                                            );
+                                             notifier.loadAddress(repo,context);
+                                          } else {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Address is null',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
                                   style: OutlinedButton.styleFrom(
-                                    backgroundColor: Colors.white,
+                                    backgroundColor: const Color(0xFFF7CECE),
                                     side: BorderSide(
-                                      color: Colors.grey.shade400,
+                                      color: Colors.red.shade400,
                                     ),
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 14,
@@ -297,10 +320,19 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Back',
-                                    style: TextStyle(color: Colors.black),
-                                  ),
+                                  child: notifier.isLoading
+                                      ? const SizedBox(
+                                          height: 16,
+                                          width: 16,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Delete',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -423,17 +455,25 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<CityModel>(
+        child: DropdownButton<int>(
           isExpanded: true,
-          value: notifier.selectedCity,
+          value: notifier.selectedCity?.cityId,
           items: notifier.allCities
               .map(
-                (c) =>
-                    DropdownMenuItem(value: c, child: Text(c.cityName ?? "")),
+                (c) => DropdownMenuItem<int>(
+                  value: c.cityId,
+                  child: Text(c.cityName ?? ""),
+                ),
               )
               .toList(),
-          onChanged: notifier.updateSelectedCity,
-          hint: const Text('Select city'),
+          onChanged: (value) {
+            final selected = notifier.allCities.firstWhere(
+              (c) => c.cityId == value,
+              orElse: () => CityModel(),
+            );
+            notifier.updateSelectedCity(selected);
+          },
+          hint: const Text('Select City'),
         ),
       ),
     );
@@ -448,16 +488,24 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<CityModel>(
+        child: DropdownButton<int>(
           isExpanded: true,
-          value: notifier.selectedRegion,
+          value: notifier.selectedRegion?.cityId,
           items: notifier.cities
               .map(
-                (c) =>
-                    DropdownMenuItem(value: c, child: Text(c.cityName ?? "")),
+                (c) => DropdownMenuItem<int>(
+                  value: c.cityId,
+                  child: Text(c.cityName ?? ""),
+                ),
               )
               .toList(),
-          onChanged: notifier.updateSelectedRegion,
+          onChanged: (value) {
+            final selected = notifier.cities.firstWhere(
+              (c) => c.cityId == value,
+              orElse: () => CityModel(),
+            );
+            notifier.updateSelectedRegion(selected);
+          },
           hint: const Text('Select Region'),
         ),
       ),
@@ -469,14 +517,6 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
     AddressRepository repo,
     AddressChangeNotifier notifier,
   ) async {
-    // if (notifier.useExisting) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(
-    //       content: Text('Select existing address not implemented'),
-    //     ),
-    //   );
-    //   return;
-    // }
     if (notifier.selectedCountry == null || notifier.selectedCity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select country and city')),
@@ -503,7 +543,7 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
         cityId: notifier.selectedCity?.cityId ?? 0,
         countryId: notifier.selectedCountry?.countryId ?? 0,
         zipCode: notifier.postCode.text.trim(),
-        isDefault: false,
+        isDefault: true,
       );
 
       debugPrint("Address Payload ${jsonEncode(model)}");
@@ -514,15 +554,18 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Address added Successful')));
+        notifier.allClear();
+        notifier.loadAddress(repo,context);
       } else {
         await repo.updateAddress(model.memberShippingAddressId!, model);
+        // model = null;
         debugPrint("Address added Successful");
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Address Edit Successful')));
+        notifier.allClear();
+        notifier.loadAddress(repo,context);
       }
-
-      // if (context.mounted) Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -532,7 +575,6 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
     }
   }
 
-  // Step Item (Circle + Label)
   Widget _buildStepItem(
     String title,
     IconData icon,
@@ -560,7 +602,6 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
     );
   }
 
-  // Divider between steps
   Widget _buildDivider(Color activeColor, bool isActive) {
     return Expanded(
       child: Divider(
