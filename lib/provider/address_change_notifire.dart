@@ -6,7 +6,7 @@ import 'package:shipping/repository/address_repository.dart';
 
 
 class AddressChangeNotifier extends ChangeNotifier {
-  // Form key and controllers
+
   final formKey = GlobalKey<FormState>();
   final firstName = TextEditingController();
   final lastName = TextEditingController();
@@ -31,7 +31,7 @@ class AddressChangeNotifier extends ChangeNotifier {
 
   final Color accent = const Color(0xFF9E7041);
 
-  // Initialize with existing address if any
+  
   void initialize(AddressModel? address, AddressRepository repo) async {
     if (address != null) {
       firstName.text = address.firstName ?? "";
@@ -138,17 +138,19 @@ Future<void> loadCities(AddressRepository repo, int countryId) async {
     notifyListeners();
   }
 
-  // Setter for useExisting that notifies listeners
   void setUseExisting(bool value) {
     useExisting = value;
     notifyListeners();
   }
 
-  // Setter for isLoading to avoid calling notifyListeners from widgets
   void setLoading(bool value) {
     isLoading = value;
     notifyListeners();
   }
+
+  // void allClear(){
+  //   firstName.text = null;
+  // }
 
   @override
   void dispose() {

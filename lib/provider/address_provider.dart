@@ -18,7 +18,7 @@ final addressRepositoryProvider = Provider<AddressRepository>((ref) {
   return AddressRepository(ref.watch(apiServiceProvider));
 });
 
-// Address change notifier provider (for the shipping address form)
+// Address change notifier provider 
 final addressChangeNotifierProvider =
     ChangeNotifierProvider<AddressChangeNotifier>((ref) {
   return AddressChangeNotifier();
@@ -42,10 +42,8 @@ class AddressesNotifier extends StateNotifier<AsyncValue<List<AddressModel>>> {
   Future<void> delete(int id, int memberId) async {
     try {
       await repo.removeAddress(id, memberId);
-      // refresh
       await load(memberId);
     } catch (e) {
-      // handle error (could update state with error)
     }
   }
 }

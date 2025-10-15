@@ -71,16 +71,12 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
                             child: Container(
-                              padding: const EdgeInsets.all(6),
+                              padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: Colors.black45),
                                 color: Colors.white.withOpacity(0.9),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 2,
-                                  ),
-                                ],
+                                
                               ),
                               child: const Icon(
                                 Icons.arrow_back,
@@ -104,18 +100,17 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
                         ],
                       ),
                     ),
-
-                    // ======== Bottom Progress Section ========
                     Expanded(
                       child: Container(
                         width: double.infinity,
                         color: appbarColor,
                         padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 20,
+                          vertical: 11,
+                          horizontal: 17,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
+
                           children: [
                             _buildStepItem(
                               "Shopping Cart",
@@ -152,10 +147,6 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Form(
@@ -357,38 +348,6 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
       ),
     );
   }
-
-  // Widget _buildProgressRow(Color accent) {
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(horizontal: 16),
-  //     child: Row(
-  //       children: [
-  //         _progressItem(Icons.shopping_cart, 'Shopping Cart', accent, true),
-  //         Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
-  //         _progressItem(Icons.location_on, 'Shipping Address', accent, true),
-  //         Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
-  //         _progressItem(Icons.camera_alt, 'Payment', accent, false),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // Widget _progressItem(IconData icon, String label, Color accent, bool done) {
-  //   return Column(
-  //     children: [
-  //       CircleAvatar(
-  //         backgroundColor: done ? accent : Colors.grey.shade300,
-  //         radius: 18,
-  //         child: Icon(icon, color: Colors.white, size: 18),
-  //       ),
-  //       const SizedBox(height: 6),
-  //       Text(
-  //         label,
-  //         style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-  //       ),
-  //     ],
-  //   );
-  // }
 
   Widget _label(String text) => Padding(
     padding: const EdgeInsets.only(bottom: 6),
@@ -592,7 +551,7 @@ class _ShippingAddressPageState extends ConsumerState<ShippingAddressPage> {
         Text(
           title,
           style: TextStyle(
-            fontSize: 11.5,
+            fontSize: 12.5,
             color: isActive ? Colors.black : Colors.grey,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
           ),
