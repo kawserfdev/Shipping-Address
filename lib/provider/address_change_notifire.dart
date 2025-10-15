@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:shipping/model/address_model.dart';
 import 'package:shipping/model/all_countries_model.dart';
 import 'package:shipping/model/cities_model.dart';
 import 'package:shipping/repository/address_repository.dart';
-
-final addressChangeNotifierProvider = ChangeNotifierProvider<AddressChangeNotifier>((ref) {
-  return AddressChangeNotifier();
-});
 
 
 class AddressChangeNotifier extends ChangeNotifier {
@@ -28,6 +23,8 @@ class AddressChangeNotifier extends ChangeNotifier {
   // Country and city data
   List<GetCountry> countries = [];
   List<CityModel> cities = [];
+  List<CityModel> allCities=[];
+ 
   GetCountry? selectedCountry;
   CityModel? selectedRegion;
   CityModel? selectedCity;
@@ -45,7 +42,7 @@ class AddressChangeNotifier extends ChangeNotifier {
       postCode.text = address.zipCode ?? "";
     }
     await loadCountries(repo);
-    await loadCity(repo);
+    await loadAllCities(repo);
     notifyListeners();
   }
 
@@ -58,29 +55,10 @@ class AddressChangeNotifier extends ChangeNotifier {
       final data = await repo.fetchCountries();
       countries = data;
       if (countries.isNotEmpty) selectedCountry ??= countries.first;
-
-      // if (selectedCountry != null) {
-      //   await loadCities(repo, selectedCountry!.countryId!);
-      // }
-    } catch (e) {
-      debugPrint("Error loading countries: $e");
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
- // load city list
-    Future<void> loadCity(AddressRepository repo) async {
-    try {
-      isLoading = true;
-      notifyListeners();
-
-      final data = await repo.fetchAllCities();
-      cities = data;
-      if (cities.isNotEmpty) selectedCity ??= cities.first;
-
-      if (selectedCity != null) {
-        await loadCities(repo, selectedCity!.cityId!);
+      debugPrint("Country ${countries}");
+      if (selectedCountry != null) {
+debugPrint("Selected Country ${selectedCountry}");
+        await loadCities(repo, selectedCountry!.countryId!);
       }
     } catch (e) {
       debugPrint("Error loading countries: $e");
@@ -90,29 +68,58 @@ class AddressChangeNotifier extends ChangeNotifier {
     }
   }
 
-  // Load city list by country
-  Future<void> loadCities(AddressRepository repo, int countryId) async {
+ // Load City list
+Future<void> loadAllCities(AddressRepository repo) async {
+  try {
+    isLoading = true;
+    notifyListeners();
+    allCities = await repo.fetchAllCities();
+  } catch (e) {
+    debugPrint("Error loading all cities: $e");
+  } finally {
+    isLoading = false;
+    notifyListeners();
+  }
+}
+  // load city list
+  Future<void> loadCity(AddressRepository repo, int cityId) async {
     try {
       isLoading = true;
       notifyListeners();
 
-      final data = await repo.fetchCitiesByCountry(countryId);
-      cities = data;
-      if (cities.isNotEmpty) selectedCity ??= cities.first;
+      final city = await repo.fetchCityById(cityId);
+
+      selectedRegion = city;
     } catch (e) {
-      debugPrint("Error loading cities: $e");
+      debugPrint("Error loading city: $e");
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
+  // Load city list by country
+Future<void> loadCities(AddressRepository repo, int countryId) async {
+  try {
+    isLoading = true;
+    notifyListeners();
+    cities = await repo.fetchCitiesByCountry(countryId);
+    if (cities.isNotEmpty) selectedRegion ??= cities.first;
+  } catch (e) {
+    debugPrint("Error loading cities: $e");
+  } finally {
+    isLoading = false;
+    notifyListeners();
+  }
+}
 
   // Change country
-  void updateSelectedCountry(GetCountry? country, AddressRepository repo) async {
-
+  Future<void> updateSelectedCountry(
+    GetCountry? country,
+    AddressRepository repo,
+  ) async {
     selectedCountry = country;
-    selectedCity = null;
+    selectedRegion = null;
     notifyListeners();
     if (country?.countryId != null) {
       await loadCities(repo, country!.countryId!);
@@ -125,9 +132,21 @@ class AddressChangeNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-    // Change Region
+  // Change Region
   void updateSelectedRegion(CityModel? city) {
     selectedRegion = city;
+    notifyListeners();
+  }
+
+  // Setter for useExisting that notifies listeners
+  void setUseExisting(bool value) {
+    useExisting = value;
+    notifyListeners();
+  }
+
+  // Setter for isLoading to avoid calling notifyListeners from widgets
+  void setLoading(bool value) {
+    isLoading = value;
     notifyListeners();
   }
 
@@ -143,4 +162,3 @@ class AddressChangeNotifier extends ChangeNotifier {
     super.dispose();
   }
 }
-

@@ -16,4 +16,5 @@ class AddressRepository {
   Future<List<GetCountry>> fetchCountries() => api.getAllCountries();
   Future<List<CityModel>> fetchAllCities() => api.getAllCities();
   Future<List<CityModel>> fetchCitiesByCountry(int countryId) => api.getCitiesByCountry(countryId);
+  Future<CityModel> fetchCityById(int countryId) => api.getCityById(countryId);
 }

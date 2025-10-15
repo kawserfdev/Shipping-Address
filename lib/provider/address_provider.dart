@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shipping/model/address_model.dart';
 import 'package:shipping/repository/address_repository.dart';
 import 'package:shipping/service/api_service.dart';
+import 'package:shipping/provider/address_change_notifire.dart';
 
 final httpClientProvider = Provider<http.Client>((ref) => http.Client());
 
@@ -15,6 +16,12 @@ final apiServiceProvider = Provider<ApiService>((ref) {
 // Repository
 final addressRepositoryProvider = Provider<AddressRepository>((ref) {
   return AddressRepository(ref.watch(apiServiceProvider));
+});
+
+// Address change notifier provider (for the shipping address form)
+final addressChangeNotifierProvider =
+    ChangeNotifierProvider<AddressChangeNotifier>((ref) {
+  return AddressChangeNotifier();
 });
 
 // Addresses list state notifier
