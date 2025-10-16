@@ -10,7 +10,7 @@ class MyAddressBook extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int memberId = 1004;
-    final controller = Get.put(AddressController(Get.find())); 
+    final controller = Get.find<AddressController>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.load(memberId);
     });
@@ -56,7 +56,7 @@ class MyAddressBook extends StatelessWidget {
             itemBuilder: (_, index) {
               final AddressModel address = controller.addresses[index];
               return GestureDetector(
-                onTap: ()=> Get.offNamed(Routes.address, arguments: address),
+                onTap: (){controller.setEditMode(true); Get.offNamed(Routes.address, arguments: address);},
                 child: _buildAddressCard(context, controller, address, memberId));
             },
           ),
@@ -64,7 +64,8 @@ class MyAddressBook extends StatelessWidget {
       }),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-         
+         controller.setEditMode(true);
+         Get.offNamed(Routes.address);
         },
         child: const Icon(Icons.add),
       ),

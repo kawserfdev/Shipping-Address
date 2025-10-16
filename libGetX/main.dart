@@ -14,7 +14,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-
       title: 'Shipping',
       initialRoute: Routes.initial,
       getPages: Routes.pages,

@@ -8,11 +8,9 @@ import '../getmodel/all_countries_model.dart';
 import '../getmodel/cities_model.dart';
 
 class ApiService {
-  final String kBaseUrl = 'https://iconiccollectors.r-y-x.net';
-  final http.Client client;
-  ApiService(this.client);
+  static const String kBaseUrl = 'https://iconiccollectors.r-y-x.net';
 
-  Uri _uri(String path, [Map<String, dynamic>? query]) {
+  static Uri _uri(String path, [Map<String, dynamic>? query]) {
     if (query == null) return Uri.parse('$kBaseUrl$path');
     debugPrint("API URL: $kBaseUrl$path");
     return Uri.parse(
@@ -22,7 +20,7 @@ class ApiService {
 
   // GET Addresses by member
   Future<List<AddressModel>> getAddressesByMember(int memberId) async {
-    final res = await client.get(
+    final res = await http.get(
       _uri('/api/membershipAddress/GetByMember/$memberId'),
     );
     if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -38,12 +36,12 @@ class ApiService {
   Future<AddressModelByMemberDefault?> getDefaultAddressByMember(
     int memberId,
   ) async {
-    final res = await client.get(
+    final res = await http.get(
       _uri('/api/membershipAddress/GetByMemberDefault/$memberId'),
     );
     if (res.statusCode == 204) return null;
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      final data = jsonDecode(res.body) as Map<String, dynamic>?;
+      final data = jsonDecode(res.body);
       if (data == null) return null;
       return AddressModelByMemberDefault.fromJson(data);
     }
@@ -52,7 +50,7 @@ class ApiService {
 
   // POST Add Address
   Future<AddressModel> addAddress(AddressModel model) async {
-    final res = await client.post(
+    final res = await http.post(
       _uri('/api/membershipAddress/Add'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(model.toJson()),
@@ -69,7 +67,7 @@ class ApiService {
 
   // PUT Edit Address
   Future<AddressModel> editAddress(int id, AddressModel model) async {
-    final res = await client.put(
+    final res = await http.put(
       _uri('/api/membershipAddress/Edit/$id'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(model.toJson()),
@@ -85,7 +83,7 @@ class ApiService {
 
   // DELETE Address
   Future<void> deleteAddress(int id, int memberId) async {
-    final res = await client.delete(
+    final res = await http.delete(
       _uri('/api/membershipAddress/delete/$id/$memberId'),
     );
     if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -96,7 +94,7 @@ class ApiService {
 
   // Countries
   Future<List<GetCountry>> getAllCountries() async {
-    final res = await client.get(_uri('/api/countries/all'));
+    final res = await http.get(_uri('/api/countries/all'));
     if (res.statusCode >= 200 && res.statusCode < 300) {
      final jsonResponse = jsonDecode(res.body);
     final allCountries = AllCountriesModel.fromJson(jsonResponse);
@@ -108,7 +106,7 @@ class ApiService {
 
   // Cities (all)
   Future<List<CityModel>> getAllCities() async {
-    final res = await client.get(_uri('/api/cities/GetAll'));
+    final res = await http.get(_uri('/api/cities/GetAll'));
     if (res.statusCode >= 200 && res.statusCode < 300) {
       final data = jsonDecode(res.body) as List;
       return data
@@ -120,7 +118,7 @@ class ApiService {
 
   // Cities by country
   Future<List<CityModel>> getCitiesByCountry(int countryId) async {
-    final res = await client.get(
+    final res = await http.get(
       _uri('/api/cities/GetAllByCountry?countryId=$countryId&lang=en'),
     );
     if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -134,7 +132,7 @@ class ApiService {
 
   // City by city ID
   Future<CityModel> getCityById(int cityId) async {
-    final res = await client.get(
+    final res = await http.get(
       _uri('/api/cities/GetById?cityId=$cityId&lang=en'),
     );
     if (res.statusCode >= 200 && res.statusCode < 300) {

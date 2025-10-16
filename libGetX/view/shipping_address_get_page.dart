@@ -14,42 +14,41 @@ class ShippingAddressPage extends StatefulWidget {
 }
 
 class _ShippingAddressPageState extends State<ShippingAddressPage> {
-  late AddressController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = Get.find<AddressController>();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await controller.initialize(widget.address);
-
-      controller.firstName.text = widget.address?.firstName ?? '';
-      controller.lastName.text = widget.address?.lastName ?? '';
-      controller.email.text = widget.address?.email ?? '';
-      controller.phone.text = widget.address?.mobileNo ?? '';
-      controller.addressLine.text = widget.address?.addressLine1 ?? '';
-      controller.buildingName.text = widget.address?.addressLine2 ?? '';
-      controller.postCode.text = widget.address?.zipCode ?? '';
-
-      // Preselect country, city, region if available
-      if (widget.address?.country != null) {
-        final country = controller.countries.firstWhereOrNull(
-          (c) => c.countryId == widget.address?.country!.countryId,
-        );
-        if (country != null) controller.selectedCountry.value = country;
-      }
-
-      if (widget.address?.city != null) {
-        final city = controller.allCities.firstWhereOrNull(
-          (c) => c.cityId == widget.address?.city!.cityId,
-        );
-        if (city != null) controller.selectedCity.value = city;
-      }
-    });
-  }
+  AddressController controller = Get.put(AddressController());
 
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   controller = Get.find<AddressController>();
+
+  //   WidgetsBinding.instance.addPostFrameCallback((_) async {
+  //     await controller.initialize(widget.address);
+
+  //     // controller.firstName.text = widget.address?.firstName ?? '';
+  //     // controller.lastName.text = widget.address?.lastName ?? '';
+  //     // controller.email.text = widget.address?.email ?? '';
+  //     // controller.phone.text = widget.address?.mobileNo ?? '';
+  //     // controller.addressLine.text = widget.address?.addressLine1 ?? '';
+  //     // controller.buildingName.text = widget.address?.addressLine2 ?? '';
+  //     // controller.postCode.text = widget.address?.zipCode ?? '';
+
+  //     // Preselect country, city, region if available
+  //     if (widget.address?.country != null) {
+  //       final country = controller.countries.firstWhereOrNull(
+  //         (c) => c.countryId == widget.address?.country!.countryId,
+  //       );
+  //       if (country != null) controller.selectedCountry.value = country;
+  //     }
+
+  //     if (widget.address?.city != null) {
+  //       final city = controller.allCities.firstWhereOrNull(
+  //         (c) => c.cityId == widget.address?.city!.cityId,
+  //       );
+  //       if (city != null) controller.selectedCity.value = city;
+  //     }
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -253,7 +252,40 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
               ],
             ),
             const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Radio<bool>(
+                      value: true,
+                      groupValue: controller.useExisting.value,
+                      onChanged: (v) => controller.setUseExisting(v ?? false),
+                      activeColor: controller.accent,
+                    ),
+                    title: const Text('Use An Existing Address'),
+                    onTap: () => controller.setUseExisting(true),
+                  ),
+                ),
+                Expanded(
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Radio<bool>(
+                      value: false,
+                      groupValue: controller.useExisting.value,
+                      onChanged: (v) => controller.setUseExisting(v ?? false),
+                      activeColor: controller.accent,
+                    ),
+                    title: const Text('Use A New Address'),
+                    onTap: () => controller.setUseExisting(false),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
             _buildSubmitButtons(),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -353,24 +385,54 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
 
   Widget _buildSubmitButtons() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        
         Row(
           children: [
             Expanded(
               child: OutlinedButton(
                 onPressed: () => Get.back(),
-                child: const Text('Back'),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  side: BorderSide(color: Colors.grey.shade400),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Back',
+                  style: TextStyle(color: Colors.black),
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
-                onPressed: () async {
-                  if (!controller.formKey.currentState!.validate()) return;
-                  await _onContinue();
-                },
-                child: const Text('Continue'),
+                onPressed: controller.isLoading.value
+                    ? null
+                    : () async {
+                        if (!controller.formKey.currentState!.validate())
+                          return;
+                        await _onContinue();
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: controller.accent,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: controller.isLoading.value
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('Continue'),
               ),
             ),
           ],
@@ -422,31 +484,17 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
     controller.setLoading(true);
 
     try {
-      final model = AddressModel(
-        memberShippingAddressId: widget.address?.memberShippingAddressId ?? 0,
-        memberId: widget.address?.memberId ?? 1004,
-        firstName: controller.firstName.text,
-        lastName: controller.lastName.text,
-        email: controller.email.text,
-        mobileNo: controller.phone.text,
-        phoneCode: '+971',
-        addressLine1: controller.addressLine.text,
-        addressLine2: controller.buildingName.text,
-        cityId: controller.selectedCity.value?.cityId,
-        countryId: controller.selectedCountry.value?.countryId,
-        zipCode: controller.postCode.text,
-        isDefault: false,
-      );
-      if (widget.address != null) {
-        await controller.repo?.updateAddress(
-          model.memberShippingAddressId!,
-          model,
+      if (controller.isEditMode.value) {
+        await controller.updateAddress(
+          widget.address!.memberShippingAddressId!,
+          1004,
         );
+        Get.snackbar('Success', 'Address updated successfully');
       } else {
-        await controller.repo?.createAddress(model);
+        await controller.addAddress(1004);
+        Get.snackbar('Success', 'Address Added successfully');
       }
 
-      Get.snackbar('Success', 'Address updated successfully');
       Get.back();
     } catch (e) {
       Get.snackbar('Error', 'Failed: $e');
