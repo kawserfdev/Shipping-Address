@@ -1,8 +1,8 @@
-import 'package:shipping/model/address_model.dart';
-import 'package:shipping/model/address_by_default_model.dart';
-import 'package:shipping/model/all_countries_model.dart';
-import 'package:shipping/model/cities_model.dart';
-import 'package:shipping/service/api_service.dart';
+import '../model/address_model.dart';
+import '../model/address_model_by_default_mbr.dart';
+import '../model/all_countries_model.dart';
+import '../model/cities_model.dart';
+import '../service/api_service.dart';
 
 class AddressRepository {
   final ApiService api;

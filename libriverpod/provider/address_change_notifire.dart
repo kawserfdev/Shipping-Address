@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shipping/model/address_by_default_model.dart';
-import 'package:shipping/model/all_countries_model.dart';
-import 'package:shipping/model/cities_model.dart';
-import 'package:shipping/repository/address_repository.dart';
+import '../model/address_model.dart';
+import '../model/all_countries_model.dart';
+import '../model/cities_model.dart';
+import '../repository/address_repository.dart';
 
 class AddressChangeNotifier extends ChangeNotifier {
   final formKey = GlobalKey<FormState>();

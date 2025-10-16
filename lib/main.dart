@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shipping/view/shipping_address_page.dart';
+import 'package:get/get.dart';
+import 'routes/app_routes.dart';
+import 'provider/get_binding.dart';
 
 void main() {
-  runApp(const ProviderScope(child: MyApp()));
+   WidgetsFlutterBinding.ensureInitialized();
+  AddressBindings().dependencies();
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
+    return GetMaterialApp(
       title: 'Shipping',
-      theme: ThemeData(
-        primarySwatch: Colors.brown,
-        scaffoldBackgroundColor: const Color(0xFFF3F1EE),
-        useMaterial3: false,
-      ),
-      home: const ShippingAddressPage(),
+      initialRoute: Routes.initial,
+      getPages: Routes.pages,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
-

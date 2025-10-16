@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:http/http.dart' as http;
-import 'package:shipping/repository/address_repository.dart';
-import 'package:shipping/service/api_service.dart';
-import 'package:shipping/provider/address_change_notifire.dart';
+import '../model/address_model.dart';
+import '../repository/address_repository.dart';
+import '../service/api_service.dart';
+import 'address_change_notifire.dart';
 
 final httpClientProvider = Provider<http.Client>((ref) => http.Client());
 
