@@ -15,13 +15,12 @@ class Routes {
       binding: AddressBindings(),
     ),
     GetPage(
-      name: address,
-      page: () {
-        final AddressModel? model = Get.arguments as AddressModel?;
-        return ShippingAddressPage(address: model ?? AddressModel());
-      },
-      binding: AddressBindings(),
-    ),
+  name: address,
+  page: () => ShippingAddressPage(
+    address: Get.arguments as AddressModel?,
+  ),
+  binding: AddressBindings(),
+),
   ];
 }
 

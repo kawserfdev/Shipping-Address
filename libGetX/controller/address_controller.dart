@@ -9,24 +9,12 @@ class AddressController extends GetxController {
   var addresses = <AddressModel>[].obs;
   final ApiService apiService = ApiService();
   var error = RxnString();
-  final formKey = GlobalKey<FormState>();
   RxBool isEditMode = false.obs;
-  TextEditingController firstName = TextEditingController();
-  TextEditingController lastName = TextEditingController();
-  TextEditingController email = TextEditingController();
-  TextEditingController phone = TextEditingController();
-  TextEditingController addressLine = TextEditingController();
-  TextEditingController buildingName = TextEditingController();
-  TextEditingController postCode = TextEditingController();
-
   var useExisting = false.obs;
   var isLoading = false.obs;
-
   var countries = <GetCountry>[].obs;
   var cities = <CityModel>[].obs;
   var allCities = <CityModel>[].obs;
-  // RxInt countryId = 2.obs;
-  // RxInt cityId = 3.obs;
 
   var selectedCountry = Rxn<GetCountry>();
   var selectedRegion = Rxn<CityModel>();
@@ -34,17 +22,16 @@ class AddressController extends GetxController {
 
   final Color accent = const Color(0xFF9E7041);
 
+  @override
+  void onInit() {
+    super.onInit();
+    initialize();
+  }
+
   Future<void> initialize() async {
     await load(1004);
     await loadCountries();
     await loadAllCities();
-
-    // if (countries.value.isNotEmpty) {
-    //   countries.value.first.countryId = countryId.value;
-    // }
-    // if (allCities.value.isNotEmpty) {
-    //   allCities.value.first.cityId = cityId.value;
-    // }
   }
 
   Future<void> load(int memberId) async {
@@ -55,107 +42,6 @@ class AddressController extends GetxController {
       addresses.assignAll(list);
     } catch (e) {
       error.value = e.toString();
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<void> addAddress(int memberId) async {
-    if (!formKey.currentState!.validate()) return;
-
-    try {
-      isLoading.value = true;
-
-      final newAddress = AddressModel(
-        memberShippingAddressId: 0,
-        memberId: memberId,
-        firstName: firstName.text.trim(),
-        lastName: lastName.text.trim(),
-        email: email.text.trim(),
-        mobileNo: phone.text.trim(),
-        phoneCode: "+971",
-        addressLine1: addressLine.text.trim(),
-        addressLine2: buildingName.text.trim(),
-        cityId: selectedCity.value?.cityId,
-        countryId: selectedCountry.value?.countryId,
-        zipCode: postCode.text.trim(),
-        isDefault: false,
-      );
-
-      await apiService.addAddress(newAddress);
-      await load(memberId);
-
-      Get.snackbar(
-        "Success",
-        "Address added successfully",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.shade100,
-      );
-      Get.back();
-    } catch (e) {
-      Get.snackbar(
-        "Error",
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  // Future<void> loadDefault(int memberId) async {
-  //   try {
-  //     isLoading.value = true;
-  //     error.value = null;
-  //     final address = await apiService.getDefaultAddressByMember(memberId);
-  //     defaultAddress.value = address;
-  //   } catch (e) {
-  //     error.value = e.toString();
-  //   } finally {
-  //     isLoading.value = false;
-  //   }
-  // }
-
-  Future<void> updateAddress(int id, int memberId) async {
-    if (!formKey.currentState!.validate()) return;
-
-    try {
-      isLoading.value = true;
-
-      final updatedAddress = AddressModel(
-        memberShippingAddressId: id,
-        memberId: memberId,
-        firstName: firstName.text.trim(),
-        lastName: lastName.text.trim(),
-        email: email.text.trim(),
-        mobileNo: phone.text.trim(),
-        phoneCode: "+971",
-        addressLine1: addressLine.text.trim(),
-        addressLine2: buildingName.text.trim(),
-        cityId: selectedCity.value?.cityId,
-        countryId: selectedCountry.value?.countryId,
-        zipCode: postCode.text.trim(),
-        isDefault: true,
-      );
-
-      await apiService.editAddress(id, updatedAddress);
-      await load(memberId);
-
-      Get.snackbar(
-        "Success",
-        "Address updated successfully",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.shade100,
-      );
-      Get.back();
-    } catch (e) {
-      Get.snackbar(
-        "Error",
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-      );
     } finally {
       isLoading.value = false;
     }
@@ -234,7 +120,9 @@ class AddressController extends GetxController {
     selectedRegion.value = null;
 
     if (country?.countryId != null) {
-      await loadCities(country!.countryId!);
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await loadCities(country!.countryId!);
+      });
     }
   }
 
@@ -245,15 +133,15 @@ class AddressController extends GetxController {
   void setLoading(bool value) => isLoading.value = value;
   void setEditMode(bool value) => isEditMode.value = value;
 
-  @override
-  void onClose() {
-    firstName.dispose();
-    lastName.dispose();
-    email.dispose();
-    phone.dispose();
-    addressLine.dispose();
-    buildingName.dispose();
-    postCode.dispose();
-    super.onClose();
-  }
+  // @override
+  // void onClose() {
+  //   firstName.dispose();
+  //   lastName.dispose();
+  //   email.dispose();
+  //   phone.dispose();
+  //   addressLine.dispose();
+  //   buildingName.dispose();
+  //   postCode.dispose();
+  //   super.onClose();
+  // }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shipping/view/shipping_address_page.dart';
+import 'view/shipping_address_page.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));

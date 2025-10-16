@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/address_controller.dart';
 import '../getmodel/address_model.dart';
 import '../getmodel/all_countries_model.dart';
 import '../getmodel/cities_model.dart';
+import '../getservice/api_service.dart';
 
 class ShippingAddressPage extends StatefulWidget {
   final AddressModel? address;
@@ -15,40 +18,41 @@ class ShippingAddressPage extends StatefulWidget {
 
 class _ShippingAddressPageState extends State<ShippingAddressPage> {
   AddressController controller = Get.put(AddressController());
-
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   controller = Get.find<AddressController>();
-
-  //   WidgetsBinding.instance.addPostFrameCallback((_) async {
-  //     await controller.initialize(widget.address);
-
-  //     // controller.firstName.text = widget.address?.firstName ?? '';
-  //     // controller.lastName.text = widget.address?.lastName ?? '';
-  //     // controller.email.text = widget.address?.email ?? '';
-  //     // controller.phone.text = widget.address?.mobileNo ?? '';
-  //     // controller.addressLine.text = widget.address?.addressLine1 ?? '';
-  //     // controller.buildingName.text = widget.address?.addressLine2 ?? '';
-  //     // controller.postCode.text = widget.address?.zipCode ?? '';
-
-  //     // Preselect country, city, region if available
-  //     if (widget.address?.country != null) {
-  //       final country = controller.countries.firstWhereOrNull(
-  //         (c) => c.countryId == widget.address?.country!.countryId,
-  //       );
-  //       if (country != null) controller.selectedCountry.value = country;
-  //     }
-
-  //     if (widget.address?.city != null) {
-  //       final city = controller.allCities.firstWhereOrNull(
-  //         (c) => c.cityId == widget.address?.city!.cityId,
-  //       );
-  //       if (city != null) controller.selectedCity.value = city;
-  //     }
-  //   });
-  // }
+  final formKey = GlobalKey<FormState>();
+  final ApiService apiService = ApiService();
+  TextEditingController firstName = TextEditingController();
+  TextEditingController lastName = TextEditingController();
+  TextEditingController email = TextEditingController();
+  TextEditingController phone = TextEditingController();
+  TextEditingController addressLine = TextEditingController();
+  TextEditingController buildingName = TextEditingController();
+  TextEditingController postCode = TextEditingController();
+  int memberId = 1004;
+  @override
+  void initState() {
+    super.initState();
+    if (widget.address != null) {
+      debugPrint("Address Print${jsonEncode(widget.address)}");
+      // controller.initialize();
+      firstName.text = widget.address?.firstName ?? '';
+      lastName.text = widget.address?.lastName ?? '';
+      email.text = widget.address?.email ?? '';
+      phone.text = widget.address?.mobileNo ?? '';
+      addressLine.text = widget.address?.addressLine1 ?? '';
+      buildingName.text = widget.address?.addressLine2 ?? '';
+      postCode.text = widget.address?.zipCode ?? '';
+      controller.selectedCountry.value = controller.countries.value
+          .firstWhereOrNull(
+            (c) => c.countryId == widget.address?.country?.countryId,
+          );
+      controller.selectedCity.value = controller.allCities.firstWhereOrNull(
+        (c) => c.cityId == widget.address?.city?.cityId,
+      );
+      controller.selectedRegion.value = controller.cities.firstWhereOrNull(
+        (c) => c.cityId == widget.address?.city?.cityId,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +103,7 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () => Get.back(),
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
@@ -178,118 +182,140 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
   Widget _buildForm(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Form(
-        key: controller.formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _label('First Name:'),
-            _input(controller.firstName, hint: 'Andru'),
-            const SizedBox(height: 12),
-            _label('Last Name:'),
-            _input(controller.lastName, hint: 'Thomas'),
-            const SizedBox(height: 12),
-            _label('Email Address:'),
-            _input(controller.email, hint: 'info@mail.com'),
-            const SizedBox(height: 12),
-            _label('Phone Number:'),
-            _input(controller.phone, hint: '+971 055 4836'),
-            const SizedBox(height: 12),
-            _label('Street Address:'),
-            _input(controller.addressLine, hint: 'Write Address'),
-            const SizedBox(height: 12),
-            _label('Building Name:'),
-            _input(controller.buildingName, hint: 'Write Building Name'),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [_label('City'), _dropdownCity(controller)],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _label('Post Code:'),
-                      _input(
-                        controller.postCode,
-                        hint: 'Post Code',
-                        compact: true,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _label('Country:'),
-                      _dropdownCountry(controller),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _label('Region / State:'),
-                      _dropdownRegion(controller),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Radio<bool>(
-                      value: true,
-                      groupValue: controller.useExisting.value,
-                      onChanged: (v) => controller.setUseExisting(v ?? false),
-                      activeColor: controller.accent,
+      child: Obx(
+        () => Form(
+          key: formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _label('First Name:'),
+              _input(firstName, hint: 'Andru'),
+              const SizedBox(height: 12),
+              _label('Last Name:'),
+              _input(lastName, hint: 'Thomas'),
+              const SizedBox(height: 12),
+              _label('Email Address:'),
+              _input(email, hint: 'info@mail.com'),
+              const SizedBox(height: 12),
+              _label('Phone Number:'),
+              _input(phone, hint: '+971 055 4836'),
+              const SizedBox(height: 12),
+              _label('Street Address:'),
+              _input(addressLine, hint: 'Write Address'),
+              const SizedBox(height: 12),
+              _label('Building Name:'),
+              _input(buildingName, hint: 'Write Building Name'),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [_label('City'), _dropdownCity(controller)],
                     ),
-                    title: const Text('Use An Existing Address'),
-                    onTap: () => controller.setUseExisting(true),
                   ),
-                ),
-                Expanded(
-                  child: ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Radio<bool>(
-                      value: false,
-                      groupValue: controller.useExisting.value,
-                      onChanged: (v) => controller.setUseExisting(v ?? false),
-                      activeColor: controller.accent,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _label('Post Code:'),
+                        _input(postCode, hint: 'Post Code', compact: true),
+                      ],
                     ),
-                    title: const Text('Use A New Address'),
-                    onTap: () => controller.setUseExisting(false),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
 
-            const SizedBox(height: 8),
-            _buildSubmitButtons(),
-            const SizedBox(height: 8),
-          ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _label('Country:'),
+                        _dropdownCountry(context, controller),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _label('Region / State:'),
+                        _dropdownRegion(controller),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Radio<bool>(
+                        value: true,
+                        groupValue: controller.useExisting.value,
+                        onChanged: (v) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            controller.setUseExisting(v ?? false);
+                          });
+                        },
+                        activeColor: controller.accent,
+                      ),
+                      title: const Text('Use An Existing Address'),
+                      onTap: () => controller.setUseExisting(true),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Radio<bool>(
+                        value: false,
+                        groupValue: controller.useExisting.value,
+                        onChanged: (v) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            controller.setUseExisting(v ?? false);
+                          });
+                        },
+                        activeColor: controller.accent,
+                      ),
+                      title: const Text('Use A New Address'),
+                      onTap: () => controller.setUseExisting(false),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+              _buildSubmitButtons(controller),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  void _clearAllFields() {
+    firstName.clear();
+    lastName.clear();
+    email.clear();
+    phone.clear();
+    addressLine.clear();
+    buildingName.clear();
+    postCode.clear();
+
+    controller.selectedCountry.value = null;
+    controller.selectedCity.value = null;
+    controller.selectedRegion.value = null;
   }
 
   Widget _label(String text) => Padding(
@@ -318,7 +344,7 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
     );
   }
 
-  Widget _dropdownCountry(AddressController c) {
+  Widget _dropdownCountry(BuildContext context, AddressController c) {
     return Obx(
       () => DropdownButtonFormField<GetCountry>(
         value: c.selectedCountry.value,
@@ -337,7 +363,11 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
               ),
             )
             .toList(),
-        onChanged: c.updateSelectedCountry,
+        onChanged: (value) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            c.updateSelectedCountry(value);
+          });
+        },
         decoration: _dropdownDecoration(),
         hint: const Text('Select Country'),
       ),
@@ -353,7 +383,11 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
               (e) => DropdownMenuItem(value: e, child: Text(e.cityName ?? "")),
             )
             .toList(),
-        onChanged: c.updateSelectedCity,
+        onChanged: (value) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            c.updateSelectedCity(value);
+          });
+        },
         decoration: _dropdownDecoration(),
         hint: const Text('Select City'),
       ),
@@ -369,7 +403,11 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
               (e) => DropdownMenuItem(value: e, child: Text(e.cityName ?? "")),
             )
             .toList(),
-        onChanged: c.updateSelectedRegion,
+        onChanged: (value) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            c.updateSelectedRegion(value);
+          });
+        },
         decoration: _dropdownDecoration(),
         hint: const Text('Select Region'),
       ),
@@ -383,7 +421,7 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
     fillColor: Colors.white,
   );
 
-  Widget _buildSubmitButtons() {
+  Widget _buildSubmitButtons(AddressController controller) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -412,9 +450,9 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
                 onPressed: controller.isLoading.value
                     ? null
                     : () async {
-                        if (!controller.formKey.currentState!.validate())
-                          return;
-                        await _onContinue();
+                        if (!formKey.currentState!.validate()) return;
+
+                        await _onContinue(controller);
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: controller.accent,
@@ -432,7 +470,12 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text('Continue'),
+                    : Text(
+                        controller.isEditMode.value
+                            ? 'Update Address'
+                            : 'Add Address',
+                        style: TextStyle(color: Colors.white),
+                      ),
               ),
             ),
           ],
@@ -441,7 +484,6 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
     );
   }
 
-  // Step Item (Circle + Label)
   Widget _buildStepItem(
     String title,
     IconData icon,
@@ -469,7 +511,6 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
     );
   }
 
-  // Divider between steps
   Widget _buildDivider(Color activeColor, bool isActive) {
     return Expanded(
       child: Divider(
@@ -480,26 +521,86 @@ class _ShippingAddressPageState extends State<ShippingAddressPage> {
     );
   }
 
-  Future<void> _onContinue() async {
+  Future<void> _onContinue(AddressController controller) async {
     controller.setLoading(true);
 
     try {
       if (controller.isEditMode.value) {
-        await controller.updateAddress(
-          widget.address!.memberShippingAddressId!,
-          1004,
-        );
-        Get.snackbar('Success', 'Address updated successfully');
-      } else {
-        await controller.addAddress(1004);
-        Get.snackbar('Success', 'Address Added successfully');
-      }
+        controller.isLoading.value = true;
 
-      Get.back();
+        final updatedAddress = AddressModel(
+          memberShippingAddressId: widget.address?.memberShippingAddressId,
+          memberId: memberId,
+          firstName: firstName.text.trim(),
+          lastName: lastName.text.trim(),
+          email: email.text.trim(),
+          mobileNo: phone.text.trim(),
+          phoneCode: "+971",
+          addressLine1: addressLine.text.trim(),
+          addressLine2: buildingName.text.trim(),
+          cityId: controller.selectedCity.value?.cityId,
+          countryId: controller.selectedCountry.value?.countryId,
+          zipCode: postCode.text.trim(),
+          isDefault: true,
+        );
+
+        await apiService.editAddress(
+          widget.address!.memberShippingAddressId!,
+          updatedAddress,
+        );
+
+        _clearAllFields(); // clear form fields
+
+        Get.snackbar(
+          "Success",
+          "Address updated successfully",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.shade100,
+        );
+        await controller.load(memberId);
+        // Get.back();
+      } else {
+        controller.isLoading.value = true;
+
+        final newAddress = AddressModel(
+          memberShippingAddressId: 0,
+          memberId: memberId,
+          firstName: firstName.text.trim(),
+          lastName: lastName.text.trim(),
+          email: email.text.trim(),
+          mobileNo: phone.text.trim(),
+          phoneCode: "+971",
+          addressLine1: addressLine.text.trim(),
+          addressLine2: buildingName.text.trim(),
+          cityId: controller.selectedCity.value?.cityId,
+          countryId: controller.selectedCountry.value?.countryId,
+          zipCode: postCode.text.trim(),
+          isDefault: false,
+        );
+
+        await apiService.addAddress(newAddress);
+
+        _clearAllFields(); // clear form fields
+        await controller.load(memberId);
+        Get.snackbar(
+          "Success",
+          "Address added successfully",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.shade100,
+        );
+
+        // Get.back();
+      }
     } catch (e) {
-      Get.snackbar('Error', 'Failed: $e');
+      Get.snackbar(
+        "Error",
+        "Failed: $e",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+      );
     } finally {
       controller.setLoading(false);
+      controller.isLoading.value = false;
     }
   }
 }
